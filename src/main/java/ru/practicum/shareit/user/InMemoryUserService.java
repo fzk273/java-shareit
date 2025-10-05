@@ -3,11 +3,11 @@ package ru.practicum.shareit.user;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.DataConflictException;
 import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.dto.request.CreateUserDto;
 import ru.practicum.shareit.user.dto.request.UpdateUserDto;
-import ru.practicum.shareit.user.dto.request.UserRequestMapper;
 import ru.practicum.shareit.user.dto.response.UserResponseDto;
-import ru.practicum.shareit.user.dto.response.UserResponseMapper;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +18,7 @@ public class InMemoryUserService implements UserService {
     public final HashMap<Long, User> userList;
     public Long userCounter = 1L;
 
-    public InMemoryUserService(HashMap<Long, User> userList) {
+    public InMemoryUserService() {
         this.userList = new HashMap<>();
     }
 
@@ -28,13 +28,13 @@ public class InMemoryUserService implements UserService {
         if (!isUserExist(id)) {
             throw new NotFoundException("There is no such user with id: " + id);
         }
-        return UserResponseMapper.toDto(userList.get(id));
+        return UserMapper.toDto(userList.get(id));
     }
 
     @Override
     public List<UserResponseDto> getUsers() {
         return userList.values().stream()
-                .map(UserResponseMapper::toDto)
+                .map(UserMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -52,7 +52,7 @@ public class InMemoryUserService implements UserService {
             throw new NotFoundException("There is no such user with id: " + id);
         }
         User currentUser = userList.get(id);
-        User fromDtoUser = UserRequestMapper.updateUserDtoToEntity(updateUserDto);
+        User fromDtoUser = UserMapper.updateUserDtoToEntity(updateUserDto);
         if (fromDtoUser.getEmail() != null && !fromDtoUser.getEmail().isEmpty()) {
             currentUser.setEmail(fromDtoUser.getEmail());
         }
@@ -68,22 +68,22 @@ public class InMemoryUserService implements UserService {
             throw new DataConflictException("User with email: " + fromDtoUser.getEmail() + " already exists in the database");
         }
         userList.replace(id, currentUser);
-        return UserResponseMapper.toDto(currentUser);
+        return UserMapper.toDto(currentUser);
     }
 
     @Override
     public UserResponseDto createUser(CreateUserDto createUserDto) {
-        User newUser = UserRequestMapper.createUserDtoToEntity(createUserDto);
+        User newUser = UserMapper.createUserDtoToEntity(createUserDto);
         if (isMailExist(newUser.getEmail())) {
             throw new DataConflictException("Email: " + newUser.getEmail() + " already exists in the database");
         }
         newUser.setId(userCounter);
         userList.put(userCounter, newUser);
         userCounter++;
-        return UserResponseMapper.toDto(newUser);
+        return UserMapper.toDto(newUser);
     }
 
-    private boolean isUserExist(Long id) {
+    public boolean isUserExist(Long id) {
         return userList.get(id) != null;
     }
 
