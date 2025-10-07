@@ -88,9 +88,7 @@ public class InMemoryUserService implements UserService {
     }
 
     private boolean isMailExist(String email) {
-        List<String> allEmails = userList.values().stream()
-                .map(User::getEmail)
-                .toList();
-        return allEmails.contains(email);
+        return userList.values().stream()
+                .anyMatch(user -> user.getEmail().equals(email));
     }
 }

@@ -8,10 +8,9 @@ import lombok.Data;
 @Builder
 @Data
 public class ItemCreateDto {
-    @NotNull
     @NotBlank
     private String name;
-    @NotNull
+    @NotBlank
     private String description;
     @NotNull
     private Boolean available;

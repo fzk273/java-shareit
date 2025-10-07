@@ -1,6 +1,6 @@
 package ru.practicum.shareit.item;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemMapper;
@@ -13,17 +13,13 @@ import ru.practicum.shareit.user.UserService;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class InMemoryItemService implements ItemService {
     //userId: {itemId: item}
     private final HashMap<Long, HashMap<Long, Item>> items;
-    @Qualifier("InMemoryUserService")
     private final UserService userService;
     private Long itemsCounter = 1L;
 
-    public InMemoryItemService(UserService userService) {
-        this.items = new HashMap<>();
-        this.userService = userService;
-    }
 
     @Override
     public ItemResponseDto createItem(Long userId, ItemCreateDto dto) {
@@ -50,10 +46,10 @@ public class InMemoryItemService implements ItemService {
         }
 
         Item updatedItem = ItemMapper.itemUpdateRequestToEntity(dto);
-        if (updatedItem.getDescription() != null && !updatedItem.getDescription().isEmpty()) {
+        if (updatedItem.getDescription() != null && !updatedItem.getDescription().isBlank()) {
             currentItem.setDescription(updatedItem.getDescription());
         }
-        if (updatedItem.getName() != null && !updatedItem.getName().isEmpty()) {
+        if (updatedItem.getName() != null && !updatedItem.getName().isBlank()) {
             currentItem.setName(updatedItem.getName());
         }
         if (updatedItem.getAvailable() != null) {
