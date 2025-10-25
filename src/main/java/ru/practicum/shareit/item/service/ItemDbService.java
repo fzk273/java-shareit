@@ -3,8 +3,11 @@ package ru.practicum.shareit.item.service;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.comments.model.Comment;
+import ru.practicum.shareit.item.comments.repository.CommentRepository;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.dto.request.ItemCreateDto;
 import ru.practicum.shareit.item.dto.request.ItemUpdateDto;
@@ -24,13 +27,17 @@ public class ItemDbService implements ItemService {
     private final ItemRepository itemRepository;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final BookingRepository bookingRepository;
 
     public ItemDbService(ItemRepository itemRepository,
                          @Qualifier("UserDbService") UserService userService,
-                         UserRepository userRepository) {
+                         UserRepository userRepository, CommentRepository commentRepository, BookingRepository bookingRepository) {
         this.itemRepository = itemRepository;
         this.userService = userService;
         this.userRepository = userRepository;
+        this.commentRepository = commentRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @Transactional
@@ -56,11 +63,6 @@ public class ItemDbService implements ItemService {
         Item currentItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("There is no such item with id: " + itemId));
 
-//         (опционально) проверка, что обновляет владелец
-//         if (!currentItem.getOwner().getId().equals(userId)) {
-//             throw new ForbiddenException("Item can be updated only by its owner");
-//         }
-
         if (dto.getName() != null && !dto.getName().isBlank()) {
             currentItem.setName(dto.getName().trim());
         }
@@ -80,8 +82,10 @@ public class ItemDbService implements ItemService {
         if (!userService.isUserExist(userId)) {
             throw new NotFoundException("There is no such user with id: " + userId);
         }
+        List<Comment> comments = commentRepository.findAllByItem_Id(itemId);
+
         Item item = itemRepository.getById(itemId);
-        return ItemMapper.itemToResponseDto(item);
+        return ItemMapper.itemToResponseDto(item, comments);
     }
 
     @Override

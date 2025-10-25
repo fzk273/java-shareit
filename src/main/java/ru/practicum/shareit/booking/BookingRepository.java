@@ -76,4 +76,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "ORDER BY b.start DESC")
     List<Booking> getBookingsByOwnerAndStatus(@Param("ownerId") Long ownerId,
                                               @Param("status") BookingStatus status);
+
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "WHERE b.item.id = :itemId AND b.booker.id = :userId AND b.end < CURRENT_TIMESTAMP AND b.status = 'APPROVED'")
+    List<Booking> getCompletedBookings(Long itemId, Long userId);
+
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "WHERE b.item.id IN :itemIds AND b.status = 'APPROVED' " +
+            "ORDER BY b.start ASC")
+    List<Booking> getApprovedByItemIdsOrderByStartAsc(@Param("itemIds") List<Long> itemIds);
 }
