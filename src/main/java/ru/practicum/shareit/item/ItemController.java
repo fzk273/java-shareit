@@ -1,12 +1,14 @@
 package ru.practicum.shareit.item;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.request.ItemCreateDto;
 import ru.practicum.shareit.item.dto.request.ItemUpdateDto;
 import ru.practicum.shareit.item.dto.response.ItemResponseDto;
+import ru.practicum.shareit.item.service.ItemService;
 
 import java.util.List;
 
@@ -15,7 +17,7 @@ import java.util.List;
 public class ItemController {
     private final ItemService itemService;
 
-    public ItemController(ItemService itemService) {
+    public ItemController(@Qualifier("ItemDbService") ItemService itemService) {
         this.itemService = itemService;
     }
 
