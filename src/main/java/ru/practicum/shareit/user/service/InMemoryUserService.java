@@ -1,5 +1,6 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.service;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.DataConflictException;
 import ru.practicum.shareit.exceptions.NotFoundException;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Qualifier("InMemoryUserService")
 public class InMemoryUserService implements UserService {
     public final HashMap<Long, User> userList;
     public Long userCounter = 1L;
