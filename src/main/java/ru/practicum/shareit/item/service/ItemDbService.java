@@ -1,11 +1,16 @@
 package ru.practicum.shareit.item.service;
 
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.comments.dto.CommentMapper;
+import ru.practicum.shareit.item.comments.dto.request.CommentCreateRequestDto;
+import ru.practicum.shareit.item.comments.dto.response.CommentResponseDto;
 import ru.practicum.shareit.item.comments.model.Comment;
 import ru.practicum.shareit.item.comments.repository.CommentRepository;
 import ru.practicum.shareit.item.dto.ItemMapper;
@@ -17,9 +22,9 @@ import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Qualifier("ItemDbService")
 @Service
@@ -43,12 +48,13 @@ public class ItemDbService implements ItemService {
     @Transactional
     @Override
     public ItemResponseDto createItem(Long userId, ItemCreateDto dto) {
-        if (!userService.isUserExist(userId)) {
+        Optional<User> itemOwner = userRepository.findById(userId);
+
+        if (itemOwner.isEmpty()) {
             throw new NotFoundException("There is no such user with id: " + userId);
         }
-        User itemOwner = userRepository.getById(userId);
         Item item = ItemMapper.itemCreateRequestToEntity(dto);
-        item.setOwner(itemOwner);
+        item.setOwner(itemOwner.get());
         itemRepository.save(item);
         return ItemMapper.itemToResponseDto(item);
     }
@@ -82,16 +88,60 @@ public class ItemDbService implements ItemService {
         if (!userService.isUserExist(userId)) {
             throw new NotFoundException("There is no such user with id: " + userId);
         }
+
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("There is no such item with id: " + itemId));
+
         List<Comment> comments = commentRepository.findAllByItem_Id(itemId);
 
-        Item item = itemRepository.getById(itemId);
-        return ItemMapper.itemToResponseDto(item, comments);
+        Long lastId = null;
+        Long nextId = null;
+
+        if (Objects.equals(item.getOwner().getId(), userId)) {
+            LocalDateTime now = LocalDateTime.now();
+
+            List<Booking> lastList = bookingRepository.getLastApprovedByItemIds(List.of(itemId), now);
+            if (!lastList.isEmpty()) lastId = lastList.getFirst().getId();
+
+            List<Booking> nextList = bookingRepository.getNextApprovedByItemIds(List.of(itemId), now);
+            if (!nextList.isEmpty()) nextId = nextList.getFirst().getId();
+        }
+
+        return ItemMapper.toResponseDto(item, lastId, nextId, comments);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ItemResponseDto> getAllUserItems(Long userId) {
-        return itemRepository.findByOwnerId(userId).stream()
-                .map(ItemMapper::itemToResponseDto)
+        List<Item> items = itemRepository.findByOwnerId(userId);
+        if (items.isEmpty()) return List.of();
+
+        List<Long> itemIds = items.stream().map(Item::getId).toList();
+
+        Map<Long, List<Comment>> commentsByItemId = commentRepository.findByItemIdIn(itemIds).stream()
+                .collect(Collectors.groupingBy(c -> c.getItem().getId()));
+
+        LocalDateTime now = LocalDateTime.now();
+
+        Map<Long, Long> lastBookingIdByItemId = new HashMap<>();
+        for (Booking b : bookingRepository.getLastApprovedByItemIds(itemIds, now)) {
+            Long iid = b.getItem().getId();
+            lastBookingIdByItemId.putIfAbsent(iid, b.getId());
+        }
+
+        Map<Long, Long> nextBookingIdByItemId = new HashMap<>();
+        for (Booking b : bookingRepository.getNextApprovedByItemIds(itemIds, now)) {
+            Long iid = b.getItem().getId();
+            nextBookingIdByItemId.putIfAbsent(iid, b.getId());
+        }
+
+        return items.stream()
+                .map(it -> ItemMapper.toResponseDto(
+                        it,
+                        lastBookingIdByItemId.get(it.getId()),
+                        nextBookingIdByItemId.get(it.getId()),
+                        commentsByItemId.getOrDefault(it.getId(), List.of())
+                ))
                 .toList();
     }
 
@@ -103,7 +153,7 @@ public class ItemDbService implements ItemService {
         if (!userService.isUserExist(userId)) {
             throw new NotFoundException("There is no such user with id: " + userId);
         }
-        List<Item> userItems = itemRepository.findByOwnerId(userId);
+        List<Item> userItems = itemRepository.searchAvailableItems(userId);
         if (userItems.isEmpty()) return Collections.emptyList();
 
         String safeStringLowerCase = safeString.toLowerCase(Locale.ROOT);
@@ -111,12 +161,38 @@ public class ItemDbService implements ItemService {
         return userItems.stream()
                 .filter(item -> containsIgnoreCase(item.getName(), safeStringLowerCase)
                         || containsIgnoreCase(item.getDescription(), safeStringLowerCase))
-                .filter(Item::getAvailable)
                 .map(ItemMapper::itemToResponseDto)
                 .toList();
     }
 
     private static boolean containsIgnoreCase(String field, String strLower) {
         return field != null && field.toLowerCase(Locale.ROOT).contains(strLower);
+    }
+
+    @Transactional
+    @Override
+    public CommentResponseDto createComment(Long userId, Long itemId, CommentCreateRequestDto dto) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("There is no item with id: " + itemId));
+        User author = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("There is no user with id: " + userId));
+
+        List<Booking> bookings = bookingRepository.getCompletedBookings(itemId, userId);
+        if (bookings.isEmpty()) {
+            throw new BadRequestException("User is not renting this item");
+        }
+        Comment comment = CommentMapper.toEntity(dto, item, author);
+
+        return CommentMapper.toDto(commentRepository.save(comment));
+    }
+
+    @Transactional
+    @Override
+    public List<CommentResponseDto> getCommentsForItem(Long itemId) {
+        List<Comment> comments = commentRepository.findAllByItem_Id(itemId);
+        return comments
+                .stream()
+                .map(CommentMapper::toDto)
+                .toList();
     }
 }

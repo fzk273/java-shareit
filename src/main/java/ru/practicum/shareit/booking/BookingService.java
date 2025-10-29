@@ -20,13 +20,13 @@ import ru.practicum.shareit.user.model.User;
 import java.util.List;
 
 @Service
-public class BookingDbService {
+public class BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 
-    public BookingDbService(BookingRepository bookingRepository,
-                            UserRepository userRepository, ItemRepository itemRepository) {
+    public BookingService(BookingRepository bookingRepository,
+                          UserRepository userRepository, ItemRepository itemRepository) {
         this.bookingRepository = bookingRepository;
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
@@ -50,6 +50,13 @@ public class BookingDbService {
         if (item.getOwner().getId().equals(userId)) {
             throw new NotEnoughPrivilegesException("User " + userId + " is owner of item " + item.getId());
         }
+        List<BookingStatus> blockingStatuses = List.of(BookingStatus.APPROVED, BookingStatus.WAITING);
+        boolean overlaps = bookingRepository.existsByItem_IdAndStatusInAndStartLessThanAndEndGreaterThan(
+                item.getId(), blockingStatuses, bookingCreateDto.getEnd(), bookingCreateDto.getStart()
+        );
+        if (overlaps) {
+            throw new BadRequestException("Your booking is overlapping for item: " + item.getId());
+        }
         Booking booking = BookingMapper.bookingCreateResponseToEntity(bookingCreateDto, item, booker);
         Booking saved = bookingRepository.save(booking);
         return BookingMapper.toDto(saved);
@@ -63,6 +70,9 @@ public class BookingDbService {
         if (BookingStatus.WAITING != booking.getStatus()) {
             throw new DataConflictException("Booking with id: " + bookingId + " is not in waiting state");
         }
+        if (!userRepository.existsById(userId)) {
+            throw new BadRequestException("there is no such user with id: " + userId);
+        }
 
         if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new NotEnoughPrivilegesException("User " + userId + " is not the owner of item " + booking.getItem().getId());
@@ -75,6 +85,10 @@ public class BookingDbService {
     public BookingResponseDto getBookingById(Long userId, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("There is no booking with id: " + bookingId));
+
+        if (!userRepository.existsById(userId)) {
+            throw new BadRequestException("there is no such user with id: " + userId);
+        }
 
         if (!booking.getBooker().getId().equals(userId) && !booking.getItem().getOwner().getId().equals(userId)) {
             throw new NotEnoughPrivilegesException("Access denied to see booking details");

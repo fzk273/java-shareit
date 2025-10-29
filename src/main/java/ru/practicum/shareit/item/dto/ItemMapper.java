@@ -36,17 +36,21 @@ public class ItemMapper {
                 .build();
     }
 
-    public static ItemResponseDto itemToResponseDto(Item item,
-                                                    List<Comment> comments) {
-        List<CommentResponseDto> commentResponseDtos = comments.stream()
-                .map(CommentMapper::toDto)
-                .toList();
+    public static ItemResponseDto toResponseDto(Item item,
+                                                Long lastBookingId,
+                                                Long nextBookingId,
+                                                List<Comment> comments) {
+        List<CommentResponseDto> commentDtos = comments == null ? List.of()
+                : comments.stream().map(CommentMapper::toDto).toList();
+
         return ItemResponseDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
-                .comments(commentResponseDtos)
+                .lastBooking(lastBookingId)
+                .nextBooking(nextBookingId)
+                .comments(commentDtos)
                 .build();
     }
 }

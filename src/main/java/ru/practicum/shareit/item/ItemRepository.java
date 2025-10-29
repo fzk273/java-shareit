@@ -14,4 +14,11 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "FROM Item i " +
             "WHERE (i.name ILIKE %:text% OR i.description ILIKE %:text%) AND i.available = true")
     List<Item> searchItems(@Param("text") String text);
+
+    @Query("SELECT i " +
+            "FROM Item i " +
+            "WHERE i.available = true " +
+            "AND i.owner.id = :ownerId"
+    )
+    List<Item> searchAvailableItems(@Param("ownerId") Long ownerId);
 }

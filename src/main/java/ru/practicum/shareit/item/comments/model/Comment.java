@@ -1,9 +1,7 @@
 package ru.practicum.shareit.item.comments.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -14,6 +12,8 @@ import java.time.LocalDateTime;
 @Builder
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,14 +33,4 @@ public class Comment {
     @Column(name = "created", nullable = false)
     private LocalDateTime created;
 
-    public Comment(Long id, String text, Item item, User author, LocalDateTime created) {
-        this.id = id;
-        this.text = text;
-        this.item = item;
-        this.author = author;
-        this.created = created;
-    }
-
-    public Comment() {
-    }
 }

@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.comments.dto.request.CommentCreateRequestDto;
 import ru.practicum.shareit.item.comments.dto.response.CommentResponseDto;
-import ru.practicum.shareit.item.comments.service.CommentDbService;
 import ru.practicum.shareit.item.dto.request.ItemCreateDto;
 import ru.practicum.shareit.item.dto.request.ItemUpdateDto;
 import ru.practicum.shareit.item.dto.response.ItemResponseDto;
@@ -19,11 +18,9 @@ import java.util.List;
 @RequestMapping("/items")
 public class ItemController {
     private final ItemService itemService;
-    private final CommentDbService commentDbService;
 
-    public ItemController(@Qualifier("ItemDbService") ItemService itemService, CommentDbService commentDbService) {
+    public ItemController(@Qualifier("ItemDbService") ItemService itemService) {
         this.itemService = itemService;
-        this.commentDbService = commentDbService;
     }
 
     @PostMapping
@@ -66,15 +63,8 @@ public class ItemController {
             @RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId,
             @RequestBody @Valid CommentCreateRequestDto dto) {
 
-        CommentResponseDto commentDto = commentDbService.createComment(userId, itemId, dto);
+        CommentResponseDto commentDto = itemService.createComment(userId, itemId, dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(commentDto);
-    }
-
-    @GetMapping("/{itemId}/comment")
-    public ResponseEntity<List<CommentResponseDto>> getCommentsForItem(@PathVariable Long itemId) {
-        List<CommentResponseDto> commentDtos = commentDbService.getCommentsForItem(itemId);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(commentDtos);
     }
 }

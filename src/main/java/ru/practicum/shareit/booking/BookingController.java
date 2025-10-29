@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,19 +14,17 @@ import java.util.List;
 
 @RestController
 @RequestMapping(path = "/bookings")
+@RequiredArgsConstructor
 public class BookingController {
-    private final BookingDbService bookingDbService;
+    private final BookingService bookingService;
 
-    public BookingController(BookingDbService bookingDbService) {
-        this.bookingDbService = bookingDbService;
-    }
 
     @PostMapping
     public ResponseEntity<BookingResponseDto> createBooking(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestBody @Valid BookingCreateRequestDto bookingCreateRequestDto) {
 
-        BookingResponseDto booking = bookingDbService.createBooking(userId, bookingCreateRequestDto);
+        BookingResponseDto booking = bookingService.createBooking(userId, bookingCreateRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(booking);
     }
@@ -36,7 +35,7 @@ public class BookingController {
             @PathVariable Long bookingId,
             @RequestParam Boolean approved) {
 
-        BookingResponseDto booking = bookingDbService.approveBooking(ownerId, bookingId, approved);
+        BookingResponseDto booking = bookingService.approveBooking(ownerId, bookingId, approved);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(booking);
     }
@@ -46,7 +45,7 @@ public class BookingController {
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @PathVariable Long bookingId) {
 
-        BookingResponseDto bookingDto = bookingDbService.getBookingById(userId, bookingId);
+        BookingResponseDto bookingDto = bookingService.getBookingById(userId, bookingId);
         return new ResponseEntity<>(bookingDto, HttpStatus.OK);
     }
 
@@ -56,7 +55,7 @@ public class BookingController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "ALL") BookingState bookingState,
             @RequestParam(defaultValue = "10") int size) {
-        List<BookingResponseDto> bookings = bookingDbService.getBookingsByUser(userId, bookingState, page, size);
+        List<BookingResponseDto> bookings = bookingService.getBookingsByUser(userId, bookingState, page, size);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(bookings);
     }
@@ -66,7 +65,7 @@ public class BookingController {
             @RequestHeader("X-Sharer-User-Id") Long ownerId,
             @RequestParam(required = false, defaultValue = "ALL") BookingState state) {
 
-        List<BookingResponseDto> bookings = bookingDbService.getBookingsByOwner(ownerId, state);
+        List<BookingResponseDto> bookings = bookingService.getBookingsByOwner(ownerId, state);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(bookings);
     }

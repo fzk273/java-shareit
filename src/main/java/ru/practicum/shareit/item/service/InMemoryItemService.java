@@ -3,6 +3,8 @@ package ru.practicum.shareit.item.service;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.item.comments.dto.request.CommentCreateRequestDto;
+import ru.practicum.shareit.item.comments.dto.response.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.dto.request.ItemCreateDto;
 import ru.practicum.shareit.item.dto.request.ItemUpdateDto;
@@ -108,6 +110,16 @@ public class InMemoryItemService implements ItemService {
                 .filter(Item::getAvailable)
                 .map(ItemMapper::itemToResponseDto)
                 .toList();
+    }
+
+    @Override
+    public List<CommentResponseDto> getCommentsForItem(Long itemId) {
+        return List.of();
+    }
+
+    @Override
+    public CommentResponseDto createComment(Long userId, Long itemId, CommentCreateRequestDto dto) {
+        return null;
     }
 
     private static boolean containsIgnoreCase(String field, String strLower) {

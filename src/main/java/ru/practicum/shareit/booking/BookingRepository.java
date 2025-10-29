@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
@@ -87,4 +89,25 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE b.item.id IN :itemIds AND b.status = 'APPROVED' " +
             "ORDER BY b.start ASC")
     List<Booking> getApprovedByItemIdsOrderByStartAsc(@Param("itemIds") List<Long> itemIds);
+
+    boolean existsByItem_IdAndStatusInAndStartLessThanAndEndGreaterThan(
+            Long itemId,
+            Collection<BookingStatus> statuses,
+            LocalDateTime end,
+            LocalDateTime start
+    );
+
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "WHERE b.item.id IN :itemIds AND b.status = 'APPROVED' AND b.end < :now " +
+            "ORDER BY b.end DESC")
+    List<Booking> getLastApprovedByItemIds(@Param("itemIds") List<Long> itemIds,
+                                           @Param("now") LocalDateTime now);
+
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "WHERE b.item.id IN :itemIds AND b.status = 'APPROVED' AND b.start > :now " +
+            "ORDER BY b.start ASC")
+    List<Booking> getNextApprovedByItemIds(@Param("itemIds") List<Long> itemIds,
+                                           @Param("now") LocalDateTime now);
 }
