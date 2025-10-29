@@ -1,5 +1,8 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.service;
 
+import jakarta.validation.Valid;
+import ru.practicum.shareit.item.comments.dto.request.CommentCreateRequestDto;
+import ru.practicum.shareit.item.comments.dto.response.CommentResponseDto;
 import ru.practicum.shareit.item.dto.request.ItemCreateDto;
 import ru.practicum.shareit.item.dto.request.ItemUpdateDto;
 import ru.practicum.shareit.item.dto.response.ItemResponseDto;
@@ -17,4 +20,7 @@ public interface ItemService {
 
     List<ItemResponseDto> searchItem(Long userId, String text);
 
+    List<CommentResponseDto> getCommentsForItem(Long itemId);
+
+    CommentResponseDto createComment(Long userId, Long itemId, @Valid CommentCreateRequestDto dto);
 }

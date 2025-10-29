@@ -1,24 +1,32 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.service;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.item.comments.dto.request.CommentCreateRequestDto;
+import ru.practicum.shareit.item.comments.dto.response.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.dto.request.ItemCreateDto;
 import ru.practicum.shareit.item.dto.request.ItemUpdateDto;
 import ru.practicum.shareit.item.dto.response.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.util.*;
 
 @Service
-@RequiredArgsConstructor
+@Qualifier("InMemoryItemService")
 public class InMemoryItemService implements ItemService {
     //userId: {itemId: item}
     private final HashMap<Long, HashMap<Long, Item>> items;
     private final UserService userService;
     private Long itemsCounter = 1L;
+
+    public InMemoryItemService(HashMap<Long, HashMap<Long, Item>> items,
+                               @Qualifier("InMemoryUserService") UserService userService) {
+        this.items = items;
+        this.userService = userService;
+    }
 
 
     @Override
@@ -102,6 +110,16 @@ public class InMemoryItemService implements ItemService {
                 .filter(Item::getAvailable)
                 .map(ItemMapper::itemToResponseDto)
                 .toList();
+    }
+
+    @Override
+    public List<CommentResponseDto> getCommentsForItem(Long itemId) {
+        return List.of();
+    }
+
+    @Override
+    public CommentResponseDto createComment(Long userId, Long itemId, CommentCreateRequestDto dto) {
+        return null;
     }
 
     private static boolean containsIgnoreCase(String field, String strLower) {
