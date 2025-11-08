@@ -21,4 +21,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "AND i.owner.id = :ownerId"
     )
     List<Item> searchAvailableItems(@Param("ownerId") Long ownerId);
+
+    List<Item> findByItemRequest_Id(Long requestId);
+
+    List<Item> findAllByItemRequest_IdIn(List<Long> requestIds);
 }

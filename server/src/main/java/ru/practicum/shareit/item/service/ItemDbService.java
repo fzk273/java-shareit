@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,8 @@ import ru.practicum.shareit.item.dto.request.ItemCreateDto;
 import ru.practicum.shareit.item.dto.request.ItemUpdateDto;
 import ru.practicum.shareit.item.dto.response.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequestRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
@@ -28,35 +31,48 @@ import java.util.stream.Collectors;
 
 @Qualifier("ItemDbService")
 @Service
+@Slf4j
 public class ItemDbService implements ItemService {
     private final ItemRepository itemRepository;
     private final UserService userService;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final BookingRepository bookingRepository;
+    private final ItemRequestRepository itemRequestRepository;
+
 
     public ItemDbService(ItemRepository itemRepository,
                          @Qualifier("UserDbService") UserService userService,
-                         UserRepository userRepository, CommentRepository commentRepository, BookingRepository bookingRepository) {
+                         UserRepository userRepository, CommentRepository commentRepository, BookingRepository bookingRepository, ItemRequestRepository itemRequestRepository) {
         this.itemRepository = itemRepository;
         this.userService = userService;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.bookingRepository = bookingRepository;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     @Transactional
     @Override
     public ItemResponseDto createItem(Long userId, ItemCreateDto dto) {
-        Optional<User> itemOwner = userRepository.findById(userId);
+        User itemOwner = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("There is no such user with id: " + userId));
 
-        if (itemOwner.isEmpty()) {
-            throw new NotFoundException("There is no such user with id: " + userId);
+        Item item;
+
+        if (dto.getRequestId() != null) {
+            ItemRequest req = itemRequestRepository.findById(dto.getRequestId())
+                    .orElseThrow(() -> new NotFoundException("There is no request with id: " + dto.getRequestId()));
+            item = ItemMapper.itemCreateRequestToEntity(dto, req);
+        } else {
+            item = ItemMapper.itemCreateRequestToEntity(dto);
         }
-        Item item = ItemMapper.itemCreateRequestToEntity(dto);
-        item.setOwner(itemOwner.get());
-        itemRepository.save(item);
-        return ItemMapper.itemToResponseDto(item);
+
+        item.setOwner(itemOwner);
+
+        Item saved = itemRepository.save(item);
+
+        return ItemMapper.itemToResponseDto(saved);
     }
 
     @Transactional
@@ -107,7 +123,7 @@ public class ItemDbService implements ItemService {
             if (!nextList.isEmpty()) nextId = nextList.getFirst().getId();
         }
 
-        return ItemMapper.toResponseDto(item, lastId, nextId, comments);
+        return ItemMapper.itemToResponseDtoWithAllFields(item, lastId, nextId, comments);
     }
 
     @Transactional(readOnly = true)
@@ -136,7 +152,7 @@ public class ItemDbService implements ItemService {
         }
 
         return items.stream()
-                .map(it -> ItemMapper.toResponseDto(
+                .map(it -> ItemMapper.itemToResponseDtoWithAllFields(
                         it,
                         lastBookingIdByItemId.get(it.getId()),
                         nextBookingIdByItemId.get(it.getId()),
