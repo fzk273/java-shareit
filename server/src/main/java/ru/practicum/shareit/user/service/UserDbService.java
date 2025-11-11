@@ -47,7 +47,6 @@ public class UserDbService implements UserService {
     @Transactional
     @Override
     public UserResponseDto updateUser(Long id, UpdateUserDto updateUserDto) {
-//        User user = userRepository.save(UserMapper.updateUserDtoToEntity(updateUserDto));
 
         if (!isUserExist(id)) {
             throw new NotFoundException("There is no such user with id: " + id);
