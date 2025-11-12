@@ -8,6 +8,7 @@ import ru.practicum.shareit.booking.dto.request.BookingCreateRequestDto;
 import ru.practicum.shareit.booking.dto.response.BookingResponseDto;
 import ru.practicum.shareit.booking.enums.BookingState;
 import ru.practicum.shareit.booking.enums.BookingStatus;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.DataConflictException;
 import ru.practicum.shareit.exceptions.NotEnoughPrivilegesException;
