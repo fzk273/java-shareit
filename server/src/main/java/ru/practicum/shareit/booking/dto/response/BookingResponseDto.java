@@ -33,6 +33,4 @@ public class BookingResponseDto {
         this.status = status;
     }
 
-    public BookingResponseDto() {
-    }
 }
