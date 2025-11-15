@@ -10,4 +10,8 @@ public class UpdateUserDto {
     private String name;
     @Email
     private String email;
+
+    public boolean hasEmail() {
+        return email != null && !email.isBlank();
+    }
 }

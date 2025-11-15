@@ -67,4 +67,11 @@ class UpdateUserDtoTest {
 
         assertTrue(violations.isEmpty());
     }
+
+    @Test
+    void hasEmail_works() {
+        UpdateUserDto dto = new UpdateUserDto();
+        dto.setEmail("test@mail.com");
+        assertTrue(dto.hasEmail());
+    }
 }
