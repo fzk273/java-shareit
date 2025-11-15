@@ -4,7 +4,6 @@ import ru.practicum.shareit.item.comments.dto.response.CommentResponseDto;
 import ru.practicum.shareit.item.comments.model.Comment;
 import ru.practicum.shareit.item.comments.repository.CommentMapper;
 import ru.practicum.shareit.item.dto.request.ItemCreateDto;
-import ru.practicum.shareit.item.dto.request.ItemUpdateDto;
 import ru.practicum.shareit.item.dto.response.ItemResponseDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -31,13 +30,6 @@ public class ItemMapper {
         return item;
     }
 
-    public static Item itemUpdateRequestToEntity(ItemUpdateDto dto) {
-        return Item.builder()
-                .name(dto.getName())
-                .description(dto.getDescription())
-                .available(dto.getAvailable())
-                .build();
-    }
 
     public static ItemResponseDto itemToResponseDto(Item item) {
         return ItemResponseDto.builder()
