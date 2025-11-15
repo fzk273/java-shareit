@@ -1,4 +1,4 @@
-package ru.practicum.shareit.user.dto;
+package ru.practicum.shareit.user;
 
 import ru.practicum.shareit.user.dto.request.CreateUserDto;
 import ru.practicum.shareit.user.dto.request.UpdateUserDto;

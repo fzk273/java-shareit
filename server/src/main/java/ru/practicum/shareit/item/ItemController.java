@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +24,7 @@ public class ItemController {
 
     @PostMapping
     public ResponseEntity<ItemResponseDto> createItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                      @Valid @RequestBody ItemCreateDto dto) {
+                                                      @RequestBody ItemCreateDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(itemService.createItem(userId, dto));
     }
@@ -33,7 +32,7 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ResponseEntity<ItemResponseDto> updateItem(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                       @PathVariable("itemId") Long itemId,
-                                                      @Valid @RequestBody ItemUpdateDto dto) {
+                                                      @RequestBody ItemUpdateDto dto) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(itemService.updateItem(userId, itemId, dto));
     }
@@ -61,7 +60,7 @@ public class ItemController {
     @PostMapping("/{itemId}/comment")
     public ResponseEntity<CommentResponseDto> createCommentForItem(
             @RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long itemId,
-            @RequestBody @Valid CommentCreateRequestDto dto) {
+            @RequestBody CommentCreateRequestDto dto) {
 
         CommentResponseDto commentDto = itemService.createComment(userId, itemId, dto);
         return ResponseEntity.status(HttpStatus.CREATED)

@@ -1,7 +1,7 @@
-package ru.practicum.shareit.request.dto;
+package ru.practicum.shareit.request;
 
 
-import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.request.ItemRequestCreateDto;
 import ru.practicum.shareit.request.dto.response.ItemRequestResponseDto;

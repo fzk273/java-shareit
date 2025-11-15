@@ -1,8 +1,8 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.item;
 
-import ru.practicum.shareit.item.comments.dto.CommentMapper;
 import ru.practicum.shareit.item.comments.dto.response.CommentResponseDto;
 import ru.practicum.shareit.item.comments.model.Comment;
+import ru.practicum.shareit.item.comments.repository.CommentMapper;
 import ru.practicum.shareit.item.dto.request.ItemCreateDto;
 import ru.practicum.shareit.item.dto.request.ItemUpdateDto;
 import ru.practicum.shareit.item.dto.response.ItemResponseDto;

@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,13 +33,13 @@ public class UserController {
     }
 
     @PostMapping()
-    ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody CreateUserDto dto) {
+    ResponseEntity<UserResponseDto> createUser(@RequestBody CreateUserDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.createUser(dto));
     }
 
     @PatchMapping("/{id}")
-    ResponseEntity<UserResponseDto> updateUser(@PathVariable("id") Long id, @Valid @RequestBody UpdateUserDto dto) {
+    ResponseEntity<UserResponseDto> updateUser(@PathVariable("id") Long id, @RequestBody UpdateUserDto dto) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(userService.updateUser(id, dto));
     }

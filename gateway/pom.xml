@@ -29,10 +29,6 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>org.hibernate.validator</groupId>-->
-        <!--            <artifactId>hibernate-validator</artifactId>-->
-        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>

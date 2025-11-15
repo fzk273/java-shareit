@@ -125,8 +125,8 @@ public class ItemServiceTest {
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
         when(itemRepository.findById(anyLong()))
                 .thenReturn(Optional.of(itemOne));
-        when(userService.isUserExist(anyLong()))
-                .thenReturn(true);
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.of(new User()));
 
         ItemResponseDto itemResponseDto = itemService.updateItem(itemOwner.getId(), itemOne.getId(), itemUpdateDto);
         assertEquals("itemOne updated", itemResponseDto.getName());
@@ -140,8 +140,8 @@ public class ItemServiceTest {
                 .thenReturn(Optional.of(itemOne));
         when(commentRepository.findAllByItem_Id(itemOne.getId()))
                 .thenReturn(Collections.emptyList());
-        when(userService.isUserExist(anyLong()))
-                .thenReturn(true);
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.of(new User()));
 
 
         ItemResponseDto itemResponseDto = itemService.getById(itemOwner.getId(), itemOne.getId());
@@ -168,8 +168,8 @@ public class ItemServiceTest {
 
     @Test
     public void searchItemSuccessful() {
-        when(userService.isUserExist(anyLong()))
-                .thenReturn(true);
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.of(new User()));
         when(itemRepository.searchAvailableItems(itemOwner.getId()))
                 .thenReturn(List.of(itemOne));
 

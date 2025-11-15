@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -8,13 +9,13 @@ import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exceptions.BadRequestException;
 import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.item.comments.dto.CommentMapper;
 import ru.practicum.shareit.item.comments.dto.request.CommentCreateRequestDto;
 import ru.practicum.shareit.item.comments.dto.response.CommentResponseDto;
 import ru.practicum.shareit.item.comments.model.Comment;
+import ru.practicum.shareit.item.comments.repository.CommentMapper;
 import ru.practicum.shareit.item.comments.repository.CommentRepository;
-import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.dto.request.ItemCreateDto;
 import ru.practicum.shareit.item.dto.request.ItemUpdateDto;
 import ru.practicum.shareit.item.dto.response.ItemResponseDto;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 @Qualifier("ItemDbService")
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ItemDbService implements ItemService {
     private final ItemRepository itemRepository;
     private final UserService userService;
@@ -40,17 +42,6 @@ public class ItemDbService implements ItemService {
     private final BookingRepository bookingRepository;
     private final ItemRequestRepository itemRequestRepository;
 
-
-    public ItemDbService(ItemRepository itemRepository,
-                         @Qualifier("UserDbService") UserService userService,
-                         UserRepository userRepository, CommentRepository commentRepository, BookingRepository bookingRepository, ItemRequestRepository itemRequestRepository) {
-        this.itemRepository = itemRepository;
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.commentRepository = commentRepository;
-        this.bookingRepository = bookingRepository;
-        this.itemRequestRepository = itemRequestRepository;
-    }
 
     @Transactional
     @Override
@@ -78,7 +69,7 @@ public class ItemDbService implements ItemService {
     @Transactional
     @Override
     public ItemResponseDto updateItem(Long userId, Long itemId, ItemUpdateDto dto) {
-        if (!userService.isUserExist(userId)) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException("There is no such user with id: " + userId);
         }
 
@@ -101,7 +92,7 @@ public class ItemDbService implements ItemService {
 
     @Override
     public ItemResponseDto getById(Long userId, Long itemId) {
-        if (!userService.isUserExist(userId)) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException("There is no such user with id: " + userId);
         }
 
@@ -166,7 +157,7 @@ public class ItemDbService implements ItemService {
         String safeString = text == null ? "" : text.trim();
         if (safeString.isEmpty()) return Collections.emptyList();
 
-        if (!userService.isUserExist(userId)) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new NotFoundException("There is no such user with id: " + userId);
         }
         List<Item> userItems = itemRepository.searchAvailableItems(userId);

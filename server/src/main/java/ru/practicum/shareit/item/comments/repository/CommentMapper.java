@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.comments.dto;
+package ru.practicum.shareit.item.comments.repository;
 
 import ru.practicum.shareit.item.comments.dto.request.CommentCreateRequestDto;
 import ru.practicum.shareit.item.comments.dto.response.CommentResponseDto;
