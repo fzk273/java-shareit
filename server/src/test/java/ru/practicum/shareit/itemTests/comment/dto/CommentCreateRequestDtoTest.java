@@ -54,4 +54,12 @@ class CommentCreateRequestDtoTest {
         assertFalse(violations.isEmpty());
         assertEquals(1, violations.size());
     }
+
+    @Test
+    void hasText_returnsTrueWhenTextIsNotBlank() {
+        CommentCreateRequestDto dto = new CommentCreateRequestDto();
+        dto.setText("hello");
+
+        assertTrue(dto.hasText());
+    }
 }

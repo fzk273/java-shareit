@@ -9,4 +9,8 @@ import lombok.Setter;
 public class CommentCreateRequestDto {
     @NotBlank
     private String text;
+
+    public boolean hasText() {
+        return text != null && !text.isBlank();
+    }
 }
